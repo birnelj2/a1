@@ -1,0 +1,6 @@
+.env
+.DS_Store
+server.cert
+server.key
+node_modules/
+/*.env
