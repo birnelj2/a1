@@ -10,11 +10,13 @@ const fs = require('fs')
 
 
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
+//const mongoose = require('mongoose');
+const redis = require('redis');
+const connectRedis = require('connect-redis')
 const session = require('express-session');
 const passport = require('passport');
-const MongoStore = require('connect-mongo');
-const mongoSanitize = require('express-mongo-sanitize');
+//const MongoStore = require('connect-mongo');
+//const mongoSanitize = require('express-mongo-sanitize');
 
 
 const User = require("./models/user");
@@ -52,7 +54,7 @@ const dbConnection = mongoose.connect(blog_db_url, (err) => {
   }
 });
 
-app.use(
+/*app.use(
 	session({
 		secret: config.get('secret'),
 		resave: false,
@@ -64,7 +66,34 @@ app.use(
 		cookie: { secure: 'auto' }
 	})
 );
+*/
 
+//configure redis client
+const redisClient = redis.createClient({
+	host: config.get('redis_host'),
+	port: config.get('redis_port')
+})
+
+//tell us if we can establish redis connection
+redisClient.on('error', function (err) {
+    console.log('no redis connection ' + err);
+});
+redisClient.on('connect', function (err) {
+    console.log('successful redis connection');
+});
+
+//configure session
+app.use(session({
+	store: new RedisStore({ client: redisClient }),
+	secret: config.get('secret'),
+	resave: false,
+	saveUninitialized: false,
+	cookie: {
+		secure: false,
+		httpOnly: false,
+		maxAge: 1000*60*10 //session age in ms
+	}
+}))
 
 
 app.use(passport.initialize());
