@@ -14,8 +14,8 @@ router.use(express.static('public'));
 
 router.post('/logout', userControllers.userLogout);
 
-router.post('/login', checkAuth.authenticateUserMiddleware, function(req, res) {
-	res.redirect('/post/');
+router.post('/login', userControllers.userAuth, function(req, res, next) {
+	res.redirect('/post');
 });
 
 router.get('/login', function(req, res) {
@@ -40,6 +40,7 @@ router.post(
 		// Indicates the success of this synchronous custom validator
 		return true;
 	}),
+	userControllers.userExists,
     userControllers.userRegister
 );
 

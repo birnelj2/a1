@@ -42,7 +42,14 @@ var config = convict({
     name: {
       doc: 'Database name',
       format: String,
-      default: 'default'
+      default: 'default',
+      env: 'DB_NAME'
+    },
+    user: {
+      doc: 'Database username',
+      format: String,
+      default: 'default',
+      env: 'DB_USER'
     },
     db_url: {
       format: '*',
@@ -54,7 +61,7 @@ var config = convict({
       format: '*',
       default: '',
       sensitive: true,
-      env: 'MON_PASS'
+      env: 'DB_PASS'
     }
   },
   secret: {

@@ -4,6 +4,8 @@ const passport = require('passport');
 
 const isAuthenticatedMiddleware = (req, res, next) => {
 	console.log('middleware entered');
+	console.log(req.body)
+	console.log(req.baseUrl)
 	if (req.isAuthenticated()) {
 		console.log('user authenticated');
 		return next();
