@@ -9,7 +9,6 @@ const http=require("http");
 
 
 
-
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const session = require('express-session');
@@ -40,6 +39,8 @@ app.use(express.static('public'));
   
 app.set('trust proxy', 1); // trust first proxy
 
+const RedisStore = connectRedis(session)
+
 const port = config.get('port') || 3000;
 
 //configure redis client
@@ -55,6 +56,8 @@ redisClient.on('error', function (err) {
 redisClient.on('connect', function (err) {
     console.log('successful redis connection');
 });
+
+
 
 //configure session
 app.use(session({
@@ -74,7 +77,19 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+/*
+passport.use(User.createStrategy());
 
+passport.serializeUser(function(user, done) {
+	done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+	store.findById(id, function(err, user) {
+		done(err, user);
+	});
+});
+*/
 
 app.use(function(req, res, next) {
 	res.locals.isAuthenticated=req.isAuthenticated();
