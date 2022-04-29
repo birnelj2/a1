@@ -55,7 +55,23 @@ const composePost = (req, res) => {
 					const keyString = results.length+''	
 					ioredis.hmset(keyString, postHash);
 					console.log("ioredis key = "+keyString);
+
+					//put the whole page into the redis cache
+					let posts=[];
+
+					Object.keys(results).forEach(function(key) {
+						
+						var r = results[key];
+						posts.push(r.id+'');
+						posts.push(r.username+'');
+						posts.push(r.title+'');
+						posts.push(r.content+'');
+					});
+					//push the page to the cache
+					ioredis.lpush("all-posts", posts);
+
 				}
+				
 			})
 
 		}
@@ -78,8 +94,26 @@ const composePost = (req, res) => {
 }
 
 const displayAllPosts = (req, res) => {
+	ioredis.exists("all-posts", (err, allPostVal) => {
+		if(allPostVal == 1){
+			let postHM = [];
 
-	console.log("trying to display posts")
+			ioredis.lrange("all-posts", 0, -1, (err, resultAll) => {
+				console.log("********************")
+				console.log(resultAll);
+				for(let i = 0; i<resultAll.length; i+=4){
+					postHM.push(new PostSQL(resultAll[i+3], resultAll[i+2], resultAll[i+1], resultAll[i]));
+				}
+
+				res.render('home',{
+					startingContent: homeStartingContent,
+					posts: postHM
+				});
+
+			});
+		} else {
+
+			console.log("trying to display posts from DB")
 	db.query('Select * from posts ',  function(error, results, fields) {
         if (error) 
             {
@@ -91,16 +125,9 @@ const displayAllPosts = (req, res) => {
             console.log(results)
             //console.log("redirect")
             //res.redirect('register')
+			
 			let posts=[];
-			/*
-			for (var r in results){
-				console.log(r)
-				console.log(r.id)
-				console.log(r.title)
-				console.log(r.content)
-				posts.push(new PostSQL(r.id,r.username,r.title,r.content));
-			}
-			*/
+			
 			// iterate for all the rows in result
 			Object.keys(results).forEach(function(key) {
 				var r = results[key];
@@ -111,10 +138,14 @@ const displayAllPosts = (req, res) => {
 				console.log(r.content)
 				posts.push(new PostSQL(r.id,r.username,r.title,r.content));
 			});
+			
+			
 			res.render('home', {
 				startingContent: homeStartingContent,//,
 				posts: posts
 			});
+
+
         }
         else
         {
@@ -125,6 +156,12 @@ const displayAllPosts = (req, res) => {
         }
        
     });
+
+		}
+	});
+
+
+	
 	
 	//res.render('home', {
 	//	startingContent: homeStartingContent})

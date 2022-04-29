@@ -47,7 +47,11 @@ const port = config.get('port') || 3000;
 const redisClient = redis.createClient({
 	host: config.get('redis_host'),
 	port: config.get('redis_port')
-})
+});
+
+(async () => {
+	redisClient.connect();
+ })();
 
 //tell us if we can establish redis connection
 redisClient.on('error', function (err) {
