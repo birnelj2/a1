@@ -28,11 +28,23 @@ router.get('/register', function(req, res) {
 	});
 });
 
+function checkErrors(req,res,next){
+	const errors=validationResult(req);
+	if(!errors.isEmpty()){
+		console.log("Error Invalid Register Fields");
+		return
+	}
+	console.log('hey')
+	next();
+}
 
 router.post(
 	'/register',
 	body('username', 'Username field cannot be empty.').notEmpty(),
-	body('username', 'Username must be between 5-15 characters long.').isLength({ min: 5, max: 15 }),
+	body('password', 'Password must be at least 8 characters long, contain lowercase uppercase and symbol').matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}$/, "i"),
+	//body('username', 'Password must be at least 8 characters long, contain lowercase uppercase and symbol').matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}$/, "i"),
+	//body('email', 'Password must be at least 8 characters long, contain lowercase uppercase and symbol').matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}$/, "i"),
+	body('email','email cant be empty').notEmpty(),
 	body('passwordMatch', 'Passwords do not match, please enter matching passwords.').custom((value, { req }) => {
 		if (value !== req.body.password) {
 			throw new Error('Password confirmation does not match password');
@@ -40,6 +52,8 @@ router.post(
 		// Indicates the success of this synchronous custom validator
 		return true;
 	}),
+	checkErrors,
+	userControllers.emailExists,
 	userControllers.userExists,
     userControllers.userRegister
 );

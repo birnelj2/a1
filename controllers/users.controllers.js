@@ -119,60 +119,29 @@ function userExists(req,res,next)
     });
 }
 
-/*
-const userRegister = (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-
-    const input_username = req.body.username;
-    const input_email = req.body.email;
-    const input_password = req.body.password;
-
-
-    console.log(input_username);
-
-    const userExists = User.exists({ username: input_username }, function (err, doc) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log('Result :', doc); // false
-            return doc;
-        }
-    });
-
-    const emailExists = User.exists({ email: input_email }, function (err, doc) {
-        if (err) {
-            console.log(err);
-        } else {
-            console.log('Result :', doc); // false
-            return doc;
-        }
-    });
-
-    console.log(userExists);
-
-    if (userExists != null || emailExists != null) {
-        console.log('User or email exists');
-        res.redirect('register');
-    } else {
-        console.log(input_email, input_password, input_username);
-        newUser = new User({ email: req.body.email, username: req.body.username });
-        User.register(newUser, input_password, function (err, user) {
-            if (err) {
-                console.log(err);
-                res.redirect('/user/register');
-            } else {
-                passport.authenticate('local')(req, res, function () {
-                    res.redirect('/post');
-                });
+function emailExists(req,res,next)
+{
+    console.log("Email Chec!");
+    db.query('Select * from users where email=? ', [req.body.email], function(error, results, fields) {
+        if (error) 
+            {
+                console.log("Error");
             }
-        });
-    }
-};
-*/
+       else if(results.length>0)
+         {
+            console.log(results.length)
+            console.log(results)
+            console.log("redirect")
+            res.redirect('register')
+        }
+        else
+        {
+            next();
+        }
+       
+    });
+}
+
 
 const userRegister =((req,res,next)=>{
     console.log("Inside post");
@@ -205,5 +174,6 @@ module.exports = {
     userRegister,
     userLogout,
     userExists,
-    userAuth
+    userAuth,
+    emailExists
 };
